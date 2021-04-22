@@ -1,12 +1,12 @@
 import telebot
 
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+#import firebase_admin
+#from firebase_admin import credentials
+#from firebase_admin import firestore
 
-cred = credentials.Certificate("firebase-sdk.json")
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+#cred = credentials.Certificate("firebase-sdk.json")
+#firebase_admin.initialize_app(cred)
+#db = firestore.client()
 import random
 import string
 
@@ -16,8 +16,8 @@ def ref_link(length):
     rand_string = ''.join(random.sample(letters_and_digits, length))
     return (rand_string)
 
-telebot.apihelper.proxy = {
-    'https':'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
+#telebot.apihelper.proxy = {
+#    'https':'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
 
 token = "1717637269:AAExsIh3F3zPSEp6wqKHaYpFZSIUddCisro"
 bot = telebot.TeleBot(token)
@@ -27,10 +27,10 @@ bot = telebot.TeleBot(token)
 def start_message(message):
     print(message.text[7:])
     keyboard = telebot.types.ReplyKeyboardMarkup(True)
-    doc_ref = db.collection('users').document(str(message.chat.id))
-    doc = doc_ref.get()
-    doc = doc.to_dict()
-    if doc['isAdmin']:
+   # doc_ref = db.collection('users').document(str(message.chat.id))
+  #  doc = doc_ref.get()
+   # doc = doc.to_dict()
+    if True:
         keyboard.row('Прогнозы', 'Профиль', 'Функции админа')
     else:
         keyboard.row('Прогнозы', 'Профиль')
@@ -40,10 +40,21 @@ def start_message(message):
 
 @bot.message_handler(content_types=['text'])
 def react_to_start_commands(message):
+    
+    
+    
+
+    
     #######  ЗДЕСЬ НАЧИНАЮТСЯ ГЛОБАЛЬНЫЕ КОМАНДЫ #######
-    if message.text == 'Вернуться в начало':
+    if message.text == 'Вернуться в начало' or message.text == 'Готово':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row('Прогнозы', 'Профиль')
+       # doc_ref = db.collection('users').document(str(message.chat.id))
+       # doc = doc_ref.get()
+       # doc = doc.to_dict()
+        if True:
+            keyboard.row('Прогнозы', 'Профиль', 'Функции админа')
+        else:
+            keyboard.row('Прогнозы', 'Профиль')
         keyboard.row('FAQ', 'Поддержка', 'Реф. система')
         bot.send_message(message.chat.id, 'Greetings', reply_markup=keyboard)
 
@@ -162,5 +173,20 @@ def react_to_start_commands(message):
 
         ####### ЗДЕСЬ ЗАКАНЧИВАЮТСЯ ПРОГНОЗЫ ########
 
+
+    ###### ЗДЕСЬ НАЧИНАЕТСЯ АДМИН ПАНЕЛЬ  #############
+    if message.text == 'Функции админа':
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard.row('Начислить подписку', 'Добавить матч')
+        bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
+    if message.text == 'Начислить подписку':
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard.row('Готово')
+        bot.send_message(message.chat.id, 'Введите в виде: ID количество_дней', reply_markup=keyboard)
+        bot.register_next_step_handler(
+    if message.text == 'Добавить матч':
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard.row('Готово')
+        bot.send_message(message.chat.id, 'Введите в виде: Команда1 Команда2 Последние_5_игр_Команды1 Положение_таблицы_Команды1 Индекс_Силы_Команды1 Последние_5_игр_Команды2 Положение_таблицы_Команды2 Индекс_Силы_Команды2', reply_markup=keyboard)
 
 bot.polling(none_stop=True, interval=0)
