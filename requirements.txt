@@ -42,7 +42,7 @@ pyasn1-modules==0.2.8
 pycparser==2.20
 pyparsing==2.4.2
 PyQt5==5.11.3
-PyQt5-sip==4.19.13
+PyQt5-sip==12.8.1
 pyqt5-tools==5.11.3.1.4
 PySocks==1.7.0
 pyTelegramBotAPI==3.6.6
