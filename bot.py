@@ -1,29 +1,31 @@
 # coding=utf-8
 import telebot
 import numpy
-#from test_file import go
-#import sys
+# from test_file import go
+# import sys
 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
-    cred = credentials.Certificate("firebase-sdk.json")
+cred = credentials.Certificate("firebase-sdk.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 import random
 import string
+
 
 def ref_link(length):
     letters_and_digits = string.ascii_letters + string.digits
     rand_string = ''.join(random.sample(letters_and_digits, length))
     return str(rand_string)
 
-#reload(sys)
-#sys.setdefaultencoding('utf-8')
+
+# reload(sys)
+# sys.setdefaultencoding('utf-8')
 
 telebot.apihelper.proxy = {
-    'https':'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
+    'https': 'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
 
 token = "1717637269:AAExsIh3F3zPSEp6wqKHaYpFZSIUddCisro"
 bot = telebot.TeleBot(token)
@@ -58,7 +60,8 @@ def start_message(message):
     doc = doc_ref.get()
     if not doc.exists:
         db.collection('users').document(str(message.chat.id)).set({'bets_left': '0', 'isAdmin': False, 'ref_owns': [],
-                                                                   'reffed_by': reffed_by, 'bought_KHL': [], 'subscription_time': '0',
+                                                                   'reffed_by': reffed_by, 'bought_KHL': [],
+                                                                   'subscription_time': '0',
                                                                    'ref_link': 'https://t.me/SportslyBot?start='
                                                                                + ref_link(16)})
         keyboard.row('Прогнозы', 'Профиль')
@@ -184,7 +187,8 @@ def react_to_start_commands(message):
         doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Реф. система', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Ваши рефералы:\n     ' + "\n     ".join(doc['ref_owns']), reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Ваши рефералы:\n     ' + "\n     ".join(doc['ref_owns']),
+                         reply_markup=keyboard)
     ###### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ РЕФЕРАЛЬНАЯ СИСТЕМА ######
 
 
@@ -227,9 +231,9 @@ def react_to_start_commands(message):
         bot.send_message(message.chat.id, 'Выберите пункт меню', reply_markup=keyboard)
     if message.text == 'НХЛ':
         bot.send_message(message.chat.id, 'Пока что не работает')
-        #keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        #keyboard.row('Прогнозы', 'Вернуться в начало')
-        #bot.send_message(message.chat.id, 'Тут прогноз для НХЛ', reply_markup=keyboard)
+        # keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        # keyboard.row('Прогнозы', 'Вернуться в начало')
+        # bot.send_message(message.chat.id, 'Тут прогноз для НХЛ', reply_markup=keyboard)
     if message.text == 'КХЛ':
         matches = list(db.collection('bets').document("KHL").get().to_dict().keys())
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
@@ -257,7 +261,9 @@ def react_to_start_commands(message):
                 db.collection('users').document(str(message.chat.id)).update({'bought_KHL': bought})
                 bets_left = int(db.collection('users').document(str(message.chat.id)).get().to_dict()['bets_left'])
                 db.collection('users').document(str(message.chat.id)).update({'bets_left': bets_left - 1})
-                bot.send_message(message.chat.id, "Поздравляем! Получен прогноз на матч " + " | ".join(chosen_match.split(",")), reply_markup=keyboard)
+                bot.send_message(message.chat.id,
+                                 "Поздравляем! Получен прогноз на матч " + " | ".join(chosen_match.split(",")),
+                                 reply_markup=keyboard)
             else:
                 bot.send_message(message.chat.id, "У вас уже есть все матчи, попробуйте позже", reply_markup=keyboard)
         else:
@@ -266,7 +272,7 @@ def react_to_start_commands(message):
             bot.send_message(message.chat.id,
                              "У вас не осталось прогнозов, купите их прямо сейчас", reply_markup=keyboard)
 
-        ####### ЗДЕСЬ ЗАКАНЧИВАЮТСЯ ПРОГНОЗЫ ########
+            ####### ЗДЕСЬ ЗАКАНЧИВАЮТСЯ ПРОГНОЗЫ ########
 
     ###### ЗДЕСЬ НАЧИНАЕТСЯ АДМИН ПАНЕЛЬ  #############
     if message.text == 'Функции админа':
@@ -288,21 +294,21 @@ def react_to_start_commands(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Вернуться в начало')
         msg = bot.send_message(message.chat.id,
-                         'Введите в виде: Команда1 Команда2 Последние_5_игр_Команды1'
-                         ' Положение_таблицы_Команды1 Индекс_Силы_Команды1 Последние_5_игр_Команды2'
-                         ' Положение_таблицы_Команды2 Индекс_Силы_Команды2',
-                         reply_markup=keyboard)
+                               'Введите в виде: Команда1 Команда2 Последние_5_игр_Команды1'
+                               ' Положение_таблицы_Команды1 Индекс_Силы_Команды1 Последние_5_игр_Команды2'
+                               ' Положение_таблицы_Команды2 Индекс_Силы_Команды2',
+                               reply_markup=keyboard)
         bot.register_next_step_handler(msg, add_match)
     if message.text == 'Удалить матч':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Вернуться в начало')
         msg = bot.send_message(message.chat.id,
-                         'Введите в виде: Команда1 Команда2',
-                         reply_markup=keyboard)
+                               'Введите в виде: Команда1 Команда2',
+                               reply_markup=keyboard)
         bot.register_next_step_handler(msg, del_match)
 
     if ",".join(message.text.split(" | ")) in list(db.collection('bets').document("KHL").get().to_dict().keys()):
-        match =  ",".join(message.text.split(" | "))
+        match = ",".join(message.text.split(" | "))
         user = db.collection('users').document(str(message.chat.id)).get().to_dict()
         users_bets = user['bought_KHL']
         print(match)
@@ -318,16 +324,17 @@ def react_to_start_commands(message):
                 weights = list(map(float, file.read().split("\n")))
             file.close()
             bet = sigmoid(numpy.dot(params, weights))
-                if bet < 0.25:
-                    bet = ["П1", str((bet * 100).round())]
-                if 0.25 <= bet <= 0.75:
-                    if 0.45 <= bet <= 0.55:
-                        bet = ["X", str((bet * 100).round())]
+            if bet < 0.25:
+                bet = ["П1", str((bet * 100).round())]
+            elif 0.25 <= bet <= 0.75:
+                if 0.45 <= bet <= 0.55:
+                    bet = ["X", str((bet * 100).round())]
+                else:
+                    if bet < 0.5:
+                        bet = ["X1", str((bet * 100).round())]
                     else:
-                        if bet < 0.5:
-                            bet = ["X1", str((bet * 100).round())]
-                        else:
-                            bet = ["X2", str((bet * 100).round())]
+                        bet = ["X2", str((bet * 100).round())]
+            else:
                 bet = ["П2", str((bet * 100).round())]
             bot.send_message(message.chat.id, bet[0] + ", Вероятность победы второго ≈ " + bet[1][:-2] + "%")
         else:
@@ -344,8 +351,10 @@ def react_to_start_commands(message):
                 bot.send_message(message.chat.id,
                                  "У вас нет этого прогноза, чтобы его получить, купите прогнозы", reply_markup=keyboard)
 
+
     if message.text.startswith("Получить прогноз на матч"):
-        if ",".join(message.text[25:].split(" | ")) not in db.collection('users').document(str(message.chat.id)).get().to_dict()['bought_KHL']:
+        if ",".join(message.text[25:].split(" | ")) not in \
+                db.collection('users').document(str(message.chat.id)).get().to_dict()['bought_KHL']:
             bets_left = int(db.collection('users').document(str(message.chat.id)).get().to_dict()['bets_left'])
             db.collection('users').document(str(message.chat.id)).update({'bets_left': bets_left - 1})
             bought = db.collection('users').document(str(message.chat.id)).get().to_dict()['bought_KHL']
@@ -363,6 +372,7 @@ def react_to_start_commands(message):
     if message.text == "Купить больше прогнозов" or message.text == 'Купить прогнозы':
         msg = bot.send_message(message.chat.id, "Сколько вы хотите купить?")
         bot.register_next_step_handler(msg, ask_how_many_buy)
+
 
 def ask_bets(message):
     chat_id = message.chat.id
@@ -384,6 +394,7 @@ def ask_bets(message):
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
 
+
 def ask_how_many_buy(message):
     chat_id = message.chat.id
     text = message.text
@@ -391,9 +402,9 @@ def ask_how_many_buy(message):
         amount = int(text)
         keyboard1 = telebot.types.InlineKeyboardMarkup()
         url_button = telebot.types.InlineKeyboardButton(text="Перейти к оплате", url=url.format(nickname=QIWI_NICKNAME,
-                                                                                            amount_rub=str(
-                                                                                                ONE_BET_COST*amount),
-                                                                                            amount_kop='98'))
+                                                                                                amount_rub=str(
+                                                                                                    ONE_BET_COST * amount),
+                                                                                                amount_kop='98'))
         keyboard1.add(url_button)
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         doc = db.collection('users').document(str(message.chat.id)).get().to_dict()
@@ -412,6 +423,7 @@ def ask_how_many_buy(message):
         keyboard.row('Прогнозы', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Доступные матчи:', reply_markup=keyboard)
 
+
 def ask_subscription(message):
     chat_id = message.chat.id
     text = message.text.split()
@@ -420,10 +432,10 @@ def ask_subscription(message):
         amount = int(text[1])
         doc_ref = db.collection('users')
         amount = amount + int(doc_ref.document(user_id).get().to_dict()['subscription_time'])
-        doc_ref.document(user_id).set({'subscription_time' : str(amount)}, merge=True)
+        doc_ref.document(user_id).set({'subscription_time': str(amount)}, merge=True)
         ref = doc_ref.document(user_id).get().to_dict()['reffed_by']
         if ref != "-1":
-            pass # ТУТ ЧТО ТО ДЕЛАЕТСЯ ЧЕЛОВЕКУ С ID "ref"
+            pass  # ТУТ ЧТО ТО ДЕЛАЕТСЯ ЧЕЛОВЕКУ С ID "ref"
         bot.send_message(chat_id, "Начислено успешно")
     except:
         bot.send_message(chat_id, "Неправильный ввод")
@@ -432,12 +444,14 @@ def ask_subscription(message):
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
 
+
 def add_match(message):
     chat_id = message.chat.id
     text = message.text.split()
     try:
         doc_ref = db.collection('bets').document('KHL')
-        doc_ref.set({text[0] + ',' + text[1]: [text[2] + ',' + text[3] + ',' + text[4], text[5] + ',' + text[6] + ',' + text[7]]}, merge=True)
+        doc_ref.set({text[0] + ',' + text[1]: [text[2] + ',' + text[3] + ',' + text[4],
+                                               text[5] + ',' + text[6] + ',' + text[7]]}, merge=True)
         users = db.collection('users').stream()
         params = [text[2] + ',' + text[3] + ',' + text[4], text[5] + ',' + text[6] + ',' + text[7]]
         params1 = list(map(float, params[0].split(",")))
@@ -447,20 +461,22 @@ def add_match(message):
             params.append(params1[i] - params2[i])
         print(params)
         with open("weights", "r") as file:
-                weights = list(map(float, file.read().split("\n")))
-            file.close()
-            bet = sigmoid(numpy.dot(params, weights))
-                if bet < 0.25:
-                    bet = ["П1", str((bet * 100).round())]
-                if 0.25 <= bet <= 0.75:
-                    if 0.45 <= bet <= 0.55:
-                        bet = ["X", str((bet * 100).round())]
-                    else:
-                        if bet < 0.5:
-                            bet = ["X1", str((bet * 100).round())]
-                        else:
-                            bet = ["X2", str((bet * 100).round())]
-                bet = ["П2", str((bet * 100).round())]
+            weights = list(map(float, file.read().split("\n")))
+        file.close()
+        bet = sigmoid(numpy.dot(params, weights))
+        if bet < 0.25:
+            bet = ["П1", str((bet * 100).round())]
+        if 0.25 <= bet <= 0.75:
+            if 0.45 <= bet <= 0.55:
+                bet = ["X", str((bet * 100).round())]
+            else:
+                if bet < 0.5:
+                    bet = ["X1", str((bet * 100).round())]
+                else:
+                    bet = ["X2", str((bet * 100).round())]
+        bet = ["П2", str((bet * 100).round())]
+
+
         match = text[0] + ',' + text[1]
         for user in users:
             user_id = user.id
@@ -476,6 +492,7 @@ def add_match(message):
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
 
+
 def del_match(message):
     chat_id = message.chat.id
     text = message.text
@@ -485,12 +502,12 @@ def del_match(message):
     try:
         new_matches = doc_ref.get().to_dict()
         del new_matches[match]
-        #print(new_matches)
-        #doc_ref.set(new_matches)
+        # print(new_matches)
+        # doc_ref.set(new_matches)
         for user in users:
             user_id = user.id
             user_matches = user.to_dict()['bought_KHL']
-            #print(user_matches)
+            # print(user_matches)
             if match in user_matches:
                 del user_matches[user_matches.index(match)]
                 print(user_matches)
@@ -502,8 +519,9 @@ def del_match(message):
         keyboard.row('Добавить матч', 'Удалить матч')
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
-        
-def __sigmoid(self, x):
+
+
+def sigmoid(x):
     return 1 / (1 + numpy.exp(-x))
 
 
