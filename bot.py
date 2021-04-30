@@ -1,13 +1,14 @@
 # coding=utf-8
 import telebot
-from test_file import go
+import numpy
+#from test_file import go
 #import sys
 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
-cred = credentials.Certificate("firebase-sdk.json")
+    cred = credentials.Certificate("firebase-sdk.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 import random
@@ -313,7 +314,21 @@ def react_to_start_commands(message):
             for i in range(len(params1)):
                 params.append(params1[i] - params2[i])
             print(params)
-            bet = go(params)
+            with open("weights", "r") as file:
+                weights = list(map(float, file.read().split("\n")))
+            file.close()
+            bet = sigmoid(numpy.dot(inputs, weights))
+                if bet < 0.25:
+                    bet = ["П1", str((bet * 100).round())]
+                if 0.25 <= bet <= 0.75:
+                    if 0.45 <= bet <= 0.55:
+                        bet = ["X", str((bet * 100).round())]
+                    else:
+                        if bet < 0.5:
+                            bet = ["X1", str((bet * 100).round())]
+                        else:
+                            bet = ["X2", str((bet * 100).round())]
+                bet = ["П2", str((bet * 100).round())]
             bot.send_message(message.chat.id, bet[0] + ", Вероятность победы второго ≈ " + bet[1][:-2] + "%")
         else:
             bets_left = user["bets_left"]
@@ -431,7 +446,21 @@ def add_match(message):
         for i in range(len(params1)):
             params.append(params1[i] - params2[i])
         print(params)
-        bet = go(params)
+        with open("weights", "r") as file:
+                weights = list(map(float, file.read().split("\n")))
+            file.close()
+            bet = sigmoid(numpy.dot(inputs, weights))
+                if bet < 0.25:
+                    bet = ["П1", str((bet * 100).round())]
+                if 0.25 <= bet <= 0.75:
+                    if 0.45 <= bet <= 0.55:
+                        bet = ["X", str((bet * 100).round())]
+                    else:
+                        if bet < 0.5:
+                            bet = ["X1", str((bet * 100).round())]
+                        else:
+                            bet = ["X2", str((bet * 100).round())]
+                bet = ["П2", str((bet * 100).round())]
         match = text[0] + ',' + text[1]
         for user in users:
             user_id = user.id
@@ -473,6 +502,9 @@ def del_match(message):
         keyboard.row('Добавить матч', 'Удалить матч')
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
+        
+def __sigmoid(self, x):
+    return 1 / (1 + numpy.exp(-x))
 
 
 bot.polling(none_stop=False, interval=0)
