@@ -317,7 +317,7 @@ def react_to_start_commands(message):
             with open("weights", "r") as file:
                 weights = list(map(float, file.read().split("\n")))
             file.close()
-            bet = sigmoid(numpy.dot(inputs, weights))
+            bet = sigmoid(numpy.dot(params, weights))
                 if bet < 0.25:
                     bet = ["П1", str((bet * 100).round())]
                 if 0.25 <= bet <= 0.75:
@@ -449,7 +449,7 @@ def add_match(message):
         with open("weights", "r") as file:
                 weights = list(map(float, file.read().split("\n")))
             file.close()
-            bet = sigmoid(numpy.dot(inputs, weights))
+            bet = sigmoid(numpy.dot(params, weights))
                 if bet < 0.25:
                     bet = ["П1", str((bet * 100).round())]
                 if 0.25 <= bet <= 0.75:
