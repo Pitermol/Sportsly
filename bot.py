@@ -525,4 +525,4 @@ def sigmoid(x):
     return 1 / (1 + numpy.exp(-x))
 
 
-bot.polling(none_stop=False, interval=0)
+bot.polling(none_stop=False, interval=123)
