@@ -24,8 +24,8 @@ def ref_link(length):
 # reload(sys)
 # sys.setdefaultencoding('utf-8')
 
-telebot.apihelper.proxy = {
-    'https': 'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
+#telebot.apihelper.proxy = {
+#    'https': 'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
 
 token = "1717637269:AAExsIh3F3zPSEp6wqKHaYpFZSIUddCisro"
 bot = telebot.TeleBot(token)
@@ -101,7 +101,7 @@ def react_to_start_commands(message):
     ####### ЗДЕСЬ НАЧИНАЕТСЯ ПРОФИЛЬ #######
     if message.text == "Профиль":
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row('Купить подписку', 'Купить прогнозы' 'Вернуться в начало')
+        keyboard.row('Купить подписку', 'Купить прогнозы', 'Вернуться в начало')
         doc_ref = db.collection('users').document(str(message.chat.id))
         doc = doc_ref.get()
         if doc.exists:
@@ -201,7 +201,9 @@ def react_to_start_commands(message):
     if message.text == 'Активация промокода':
         doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        bot.send_message(message.chat.id,' Введите промокод:')
+        msg = bot.send_message(message.chat.id, 'Введите промокод:', reply_markup=keyboard)
+        bot.register_next_step_handler(msg, promocode_input)
+
 
     ###### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ РЕФЕРАЛЬНАЯ СИСТЕМА ######
 
@@ -383,7 +385,7 @@ def react_to_start_commands(message):
         keyboard.row('FAQ', 'Поддержка', 'Реф. система')
         bot.send_message(message.chat.id, "Поздравляем! Прогноз получен", reply_markup=keyboard)
 
-    if message.text == "Купить больше прогнозов" or message.text == 'Купить прогнозы':
+    if message.text == "Купить больше прогнозов" or message.text == '++':
         msg = bot.send_message(message.chat.id, "Сколько вы хотите купить?")
         bot.register_next_step_handler(msg, ask_how_many_buy)
 
