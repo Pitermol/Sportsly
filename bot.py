@@ -72,7 +72,10 @@ def start_message(message):
         else:
             keyboard.row('Прогнозы', 'Профиль')
     keyboard.row('FAQ', 'Поддержка', 'Реф. система')
-    bot.send_message(message.chat.id, 'Greetings', reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'Добро пожаловать в меню бота. Цель нашего бота - правильная оценка футбольных '
+                                      'матчей и предскзание результатов встреч. Наш бот основан на искуственном '
+                                      'интеллекте, человек в нем не принимает никакой роли. '
+                                      'Хорошего пользования ботом!', reply_markup=keyboard)
 
 
 @bot.message_handler(content_types=['text'])
@@ -88,7 +91,10 @@ def react_to_start_commands(message):
         else:
             keyboard.row('Прогнозы', 'Профиль')
         keyboard.row('FAQ', 'Поддержка', 'Реф. система')
-        bot.send_message(message.chat.id, 'Greetings', reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Добро пожаловать в меню бота. Цель нашего бота - правильная оценка футбольных '
+                                      'матчей и предскзание результатов встреч. Наш бот основан на искуственном '
+                                      'интеллекте, человек в нем не принимает никакой роли. '
+                                      'Хорошего пользования ботом!', reply_markup=keyboard)
 
     ######## ЗДЕСЬ ЗАКАНЧИВАЮТСЯ ГЛОБАЛЬНЫЕ КОМАНДЫ
 
@@ -168,7 +174,9 @@ def react_to_start_commands(message):
     if message.text == 'Что дает подписка':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Купить', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Подписка дает вам право сосать хуй', reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Вы можете купить подписку или разовые прогнозы. Подписка дается вам на '
+                                          'некоторое время, разовые прогнозы даются на какое-то количество '
+                                          'дней', reply_markup=keyboard)
     ###### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ ПРОФИЛЬ ######
 
 
@@ -176,7 +184,7 @@ def react_to_start_commands(message):
     ###### ЗДЕСЬ НАЧИНАЕТСЯ РЕФЕРАЛЬНАЯ СИСТЕМА ######
     if message.text == 'Реф. система':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row('Мои рефералы', 'Реф.ссылка', 'Вернуться в начало')
+        keyboard.row('Мои рефералы', 'Реф.ссылка', 'Вернуться в начало', 'Активция промокода')
         bot.send_message(message.chat.id, 'Выберите пункт меню', reply_markup=keyboard)
     if message.text == 'Реф.ссылка':
         doc = doc.to_dict()
@@ -189,6 +197,12 @@ def react_to_start_commands(message):
         keyboard.row('Реф. система', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Ваши рефералы:\n     ' + "\n     ".join(doc['ref_owns']),
                          reply_markup=keyboard)
+
+    if message.text == 'Активация промокода':
+        doc = doc.to_dict()
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        bot.send_message(message.chat.id,' Введите промокод:')
+
     ###### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ РЕФЕРАЛЬНАЯ СИСТЕМА ######
 
 
@@ -226,15 +240,15 @@ def react_to_start_commands(message):
     ####### ЗДЕСЬ НАЧИНАЮТСЯ ПРОГНОЗЫ ########
     if message.text == 'Прогнозы':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row('НХЛ', 'КХЛ')
+        keyboard.row('EPL', 'LaLiga')
         keyboard.row('Случайная ставка', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Выберите пункт меню', reply_markup=keyboard)
-    if message.text == 'НХЛ':
+    if message.text == 'EPL':
         bot.send_message(message.chat.id, 'Пока что не работает')
         # keyboard = telebot.types.ReplyKeyboardMarkup(True)
         # keyboard.row('Прогнозы', 'Вернуться в начало')
-        # bot.send_message(message.chat.id, 'Тут прогноз для НХЛ', reply_markup=keyboard)
-    if message.text == 'КХЛ':
+        # bot.send_message(message.chat.id, 'Тут прогноз для EPL', reply_markup=keyboard)
+    if message.text == 'LaLiga':
         matches = list(db.collection('bets').document("KHL").get().to_dict().keys())
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         for match in matches:
@@ -279,7 +293,7 @@ def react_to_start_commands(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Добавить матч', 'Удалить матч')
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Выбери пункт меню', reply_markup=keyboard)
     if message.text == 'Начислить прогнозы':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Вернуться в начало')
@@ -392,7 +406,21 @@ def ask_bets(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Добавить матч', 'Удалить матч')
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Выбери пункт меню', reply_markup=keyboard)
+
+def promocode_input(message):
+    chat_id = message.chat.id
+    text = message.text
+    codes = db.collection('promocode').document('promocodes').get().to_dict()['oneday']
+    if text in codes:
+        bets_left = db.collection('users').document(chat_id).get().to_dict()['bets_left']
+        bets_left += 1
+        db.collection('users').document(chat_id).update({'bets_left': bets_left})
+        now = db.collection('promocode').document('promocodes').get().to_dict()['oneday']
+        del now[now.index('test')]
+        now_dict = db.collection('promocode').document('promocodes').get().to_dict()
+        now_dict['oneday'] = now
+        db.collection('promocode').document('promocodes').update(now_dict)
 
 
 def ask_how_many_buy(message):
@@ -442,7 +470,7 @@ def ask_subscription(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Добавить матч', 'Удалить матч')
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Выбери пункт меню', reply_markup=keyboard)
 
 
 def add_match(message):
@@ -490,7 +518,7 @@ def add_match(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Добавить матч', 'Удалить матч')
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Выбери пункт меню', reply_markup=keyboard)
 
 
 def del_match(message):
@@ -518,7 +546,7 @@ def del_match(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Добавить матч', 'Удалить матч')
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Админ панель для хуесосов кстати егор пидор', reply_markup=keyboard)
+        bot.send_message(message.chat.id, 'Выбери пункт меню', reply_markup=keyboard)
 
 
 def sigmoid(x):
