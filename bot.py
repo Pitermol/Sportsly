@@ -21,10 +21,10 @@ def ref_link(length):
     return str(rand_string)
 
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+# reload(sys)
+# sys.setdefaultencoding('utf-8')
 
-#telebot.apihelper.proxy = {
+# telebot.apihelper.proxy = {
 #    'https': 'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
 
 token = "1717637269:AAExsIh3F3zPSEp6wqKHaYpFZSIUddCisro"
@@ -81,20 +81,29 @@ def start_message(message):
 @bot.message_handler(content_types=['text'])
 def react_to_start_commands(message):
     doc_ref = db.collection('users').document(str(message.chat.id))
-    doc = doc_ref.get()
     #######  ЗДЕСЬ НАЧИНАЮТСЯ ГЛОБАЛЬНЫЕ КОМАНДЫ #######
+    doc = doc_ref.get()
+    if not doc.exists:
+        db.collection('users').document(str(message.chat.id)).set({'bets_left': '0', 'isAdmin': False, 'ref_owns': [],
+                                                                   'reffed_by': "", 'bought_KHL': [],
+                                                                   'subscription_time': '0',
+                                                                   'ref_link': 'https://t.me/SportslyBot?start='
+                                                                               + ref_link(16)})
+
+    doc = doc_ref.get().to_dict()
+
     if message.text == 'Вернуться в начало':
-        doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         if doc['isAdmin']:
             keyboard.row('Прогнозы', 'Профиль', 'Функции админа')
         else:
             keyboard.row('Прогнозы', 'Профиль')
         keyboard.row('FAQ', 'Поддержка', 'Реф. система')
-        bot.send_message(message.chat.id, 'Добро пожаловать в меню бота. Цель нашего бота - правильная оценка футбольных '
-                                      'матчей и предскзание результатов встреч. Наш бот основан на искуственном '
-                                      'интеллекте, человек в нем не принимает никакой роли. '
-                                      'Хорошего пользования ботом!', reply_markup=keyboard)
+        bot.send_message(message.chat.id,
+                         'Добро пожаловать в меню бота. Цель нашего бота - правильная оценка футбольных '
+                         'матчей и предскзание результатов встреч. Наш бот основан на искуственном '
+                         'интеллекте, человек в нем не принимает никакой роли. '
+                         'Хорошего пользования ботом!', reply_markup=keyboard)
 
     ######## ЗДЕСЬ ЗАКАНЧИВАЮТСЯ ГЛОБАЛЬНЫЕ КОМАНДЫ
 
@@ -103,14 +112,12 @@ def react_to_start_commands(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Купить подписку', 'Купить прогнозы', 'Вернуться в начало')
         doc_ref = db.collection('users').document(str(message.chat.id))
-        doc = doc_ref.get()
-        if doc.exists:
-            doc = doc.to_dict()
-            bets_left = doc['bets_left']
-            hours_left = doc['subscription_time']
-            profile_info = 'Осталось часов подписки:  ' + str(hours_left) + '\n' + 'Осталось прогнозов:  ' + str(
-                bets_left)
-            bot.send_message(message.chat.id, profile_info, reply_markup=keyboard)
+#        doc = doc_ref.to_dict()
+        bets_left = doc['bets_left']
+        hours_left = doc['subscription_time']
+        profile_info = 'Осталось часов подписки:  ' + str(hours_left) + '\n' + 'Осталось прогнозов:  ' + str(
+            bets_left)
+        bot.send_message(message.chat.id, profile_info, reply_markup=keyboard)
 
     if message.text == 'Купить подписку' or message.text == 'Купить' or message.text == 'Выбрать другое время':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
@@ -179,8 +186,6 @@ def react_to_start_commands(message):
                                           'дней', reply_markup=keyboard)
     ###### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ ПРОФИЛЬ ######
 
-
-
     ###### ЗДЕСЬ НАЧИНАЕТСЯ РЕФЕРАЛЬНАЯ СИСТЕМА ######
     if message.text == 'Реф. система':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
@@ -191,12 +196,37 @@ def react_to_start_commands(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Реф. система', 'Вернуться в начало')
         bot.send_message(message.chat.id, doc['ref_link'], reply_markup=keyboard)
-    if message.text == 'Мои рефералы':
+    if message.text == 'Мои рефералы' or message.text == 'Нет':
+        # doc = doc.to_dict()
+        # print(doc)
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard.row('Реф. система', 'Вернуться в начало', 'Получить промокод')
+        bot.send_message(message.chat.id, "Ваши рефералы: \n     " + "\n     ".join(doc['ref_owns']),
+                         reply_markup=keyboard)
+    if message.text == 'Получить промокод':
         doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row('Реф. система', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Ваши рефералы:\n     ' + "\n     ".join(doc['ref_owns']),
-                         reply_markup=keyboard)
+        keyboard.row('Да', 'Нет')
+        keyboard.row('Реф. система')
+        bot.send_message(message.chat.id, 'У вас есть 2 реферала? ', reply_markup=keyboard)
+    if message.text == 'Да':
+        doc = doc.to_dict()
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        chat_id = message.chat.id
+        text = message.text
+        referals = db.collection('users').document(str(chat_id)).get().to_dict()['ref_owns']
+        referals = referals[2:]
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        if len(referals) >= 2:
+            dict = db.collection('users').document(str(chat_id)).get().to_dict()
+            dict['ref_owns'] = referals
+            db.collection('users').document(str(chat_id)).update(dict)
+            keyboard.row('Реф.система', 'Вернуться в начало')
+            bot.send_message(message.chat.id, 'Ваш промокод: ' + ref_link(8), reply_markup=keyboard)
+        else:
+            keyboard.row('Реф.система', 'Вернуться в начало')
+            bot.send_message(message.chat.id, 'У тебя нет двух рефералов, обманывать не хорошо :)',
+                             reply_markup=keyboard)
 
     if message.text == 'Активация промокода':
         doc = doc.to_dict()
@@ -204,9 +234,7 @@ def react_to_start_commands(message):
         msg = bot.send_message(message.chat.id, 'Введите промокод:', reply_markup=keyboard)
         bot.register_next_step_handler(msg, promocode_input)
 
-
     ###### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ РЕФЕРАЛЬНАЯ СИСТЕМА ######
-
 
     ##### ЗДЕСЬ НАЧИНАЕТСЯ ПОДДЕРЖКА #########
     if message.text == 'Поддержка':
@@ -214,8 +242,6 @@ def react_to_start_commands(message):
         keyboard.row('Вернуться в начало')
         bot.send_message(message.chat.id, 'Чтобы задать вопрос, заполните форму', reply_markup=keyboard)
     ####### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ ПОДДЕРЖКА #########
-
-
 
     ####### ЗДЕСЬ НАЧИНАЕТСЯ FAQ ########
     if message.text == 'FAQ':
@@ -237,20 +263,18 @@ def react_to_start_commands(message):
         bot.send_message(message.chat.id, 'Тут информация о боте', reply_markup=keyboard)
     ####### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ FAQ #########
 
-
-
     ####### ЗДЕСЬ НАЧИНАЮТСЯ ПРОГНОЗЫ ########
     if message.text == 'Прогнозы':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('EPL', 'LaLiga')
         keyboard.row('Случайная ставка', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Выберите пункт меню', reply_markup=keyboard)
-    if message.text == 'EPL':
+    if message.text == 'LaLiga':
         bot.send_message(message.chat.id, 'Пока что не работает')
         # keyboard = telebot.types.ReplyKeyboardMarkup(True)
         # keyboard.row('Прогнозы', 'Вернуться в начало')
         # bot.send_message(message.chat.id, 'Тут прогноз для EPL', reply_markup=keyboard)
-    if message.text == 'LaLiga':
+    if message.text == 'EPL':
         matches = list(db.collection('bets').document("KHL").get().to_dict().keys())
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         for match in matches:
@@ -367,7 +391,6 @@ def react_to_start_commands(message):
                 bot.send_message(message.chat.id,
                                  "У вас нет этого прогноза, чтобы его получить, купите прогнозы", reply_markup=keyboard)
 
-
     if message.text.startswith("Получить прогноз на матч"):
         if ",".join(message.text[25:].split(" | ")) not in \
                 db.collection('users').document(str(message.chat.id)).get().to_dict()['bought_KHL']:
@@ -409,6 +432,7 @@ def ask_bets(message):
         keyboard.row('Добавить матч', 'Удалить матч')
         keyboard.row('Начислить подписку', 'Начислить прогнозы', 'Вернуться в начало')
         bot.send_message(message.chat.id, 'Выбери пункт меню', reply_markup=keyboard)
+
 
 def promocode_input(message):
     chat_id = message.chat.id
@@ -514,7 +538,6 @@ def add_match(message):
                 else:
                     bet = ["X2", str((bet * 100).round())]
         bet = ["П2", str((bet * 100).round())]
-
 
         match = text[0] + ',' + text[1]
         for user in users:
