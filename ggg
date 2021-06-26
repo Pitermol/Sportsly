@@ -81,10 +81,9 @@ def start_message(message):
 @bot.message_handler(content_types=['text'])
 def react_to_start_commands(message):
     doc_ref = db.collection('users').document(str(message.chat.id))
-    doc = doc_ref.get()
+    doc = doc_ref.get().to_dict()
     #######  ЗДЕСЬ НАЧИНАЮТСЯ ГЛОБАЛЬНЫЕ КОМАНДЫ #######
     if message.text == 'Вернуться в начало':
-        doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         if doc['isAdmin']:
             keyboard.row('Прогнозы', 'Профиль', 'Функции админа')
@@ -103,9 +102,8 @@ def react_to_start_commands(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Купить подписку', 'Купить прогнозы', 'Вернуться в начало')
         doc_ref = db.collection('users').document(str(message.chat.id))
-        doc = doc_ref.get()
-        if doc.exists:
-            doc = doc.to_dict()
+        if doc_ref.exists:
+            doc = doc_ref.to_dict()
             bets_left = doc['bets_left']
             hours_left = doc['subscription_time']
             profile_info = 'Осталось часов подписки:  ' + str(hours_left) + '\n' + 'Осталось прогнозов:  ' + str(
@@ -192,10 +190,11 @@ def react_to_start_commands(message):
         keyboard.row('Реф. система', 'Вернуться в начало')
         bot.send_message(message.chat.id, doc['ref_link'], reply_markup=keyboard)
     if message.text == 'Мои рефералы' or 'Нет':
-        doc = doc.to_dict()
+        #doc = doc.to_dict()
+        #print(doc)
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Реф. система', 'Вернуться в начало', 'Получить промокод')
-        bot.send_message(message.chat.id, 'Ваши рефералы:\n     ' + "\n     ".join(doc['ref_owns']),
+        bot.send_message(message.chat.id, r'Ваши рефералы:\n     ' + "\n     ".join(doc['ref_owns']),
                          reply_markup=keyboard)
     if message.text == 'Получить промокод':
         doc = doc.to_dict()
