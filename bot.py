@@ -184,7 +184,7 @@ def react_to_start_commands(message):
     ###### ЗДЕСЬ НАЧИНАЕТСЯ РЕФЕРАЛЬНАЯ СИСТЕМА ######
     if message.text == 'Реф. система':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row('Мои рефералы', 'Реф.ссылка', 'Вернуться в начало', 'Активция промокода')
+        keyboard.row('Мои рефералы', 'Реф.ссылка', 'Вернуться в начало', 'Активация промокода')
         bot.send_message(message.chat.id, 'Выберите пункт меню', reply_markup=keyboard)
     if message.text == 'Реф.ссылка':
         doc = doc.to_dict()
@@ -415,17 +415,17 @@ def promocode_input(message):
     text = message.text
     codes = db.collection('promocode').document('promocodes').get().to_dict()['oneday']
     doc = db.collection('users').document(str(message.chat.id)).get().to_dict()
+    keyboard = telebot.types.ReplyKeyboardMarkup(True)
     if doc['isAdmin']:
         keyboard.row('Прогнозы', 'Профиль', 'Функции админа')
     else:
         keyboard.row('Прогнозы', 'Профиль')
     keyboard.row('FAQ', 'Поддержка', 'Реф. система')
     if text in codes:
-        bets_left = db.collection('users').document(chat_id).get().to_dict()['bets_left']
-        bets_left += 1
-        db.collection('users').document(chat_id).update({'bets_left': bets_left})
+        bets_left = int(db.collection('users').document(str(message.chat.id)).get().to_dict()['bets_left'])
+        db.collection('users').document(str(message.chat.id)).update({'bets_left': bets_left + 1})
         now = db.collection('promocode').document('promocodes').get().to_dict()['oneday']
-        del now[now.index('test')]
+        del now[now.index(text)]
         now_dict = db.collection('promocode').document('promocodes').get().to_dict()
         now_dict['oneday'] = now
         db.collection('promocode').document('promocodes').update(now_dict)
@@ -564,4 +564,4 @@ def sigmoid(x):
     return 1 / (1 + numpy.exp(-x))
 
 
-bot.polling(none_stop=False, interval=123)
+bot.polling(none_stop=False, interval=1)
