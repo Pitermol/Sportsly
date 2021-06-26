@@ -21,8 +21,8 @@ def ref_link(length):
     return str(rand_string)
 
 
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # telebot.apihelper.proxy = {
 #    'https': 'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
@@ -192,7 +192,6 @@ def react_to_start_commands(message):
         keyboard.row('Мои рефералы', 'Реф.ссылка', 'Вернуться в начало', 'Активация промокода')
         bot.send_message(message.chat.id, 'Выберите пункт меню', reply_markup=keyboard)
     if message.text == 'Реф.ссылка':
-        doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Реф. система', 'Вернуться в начало')
         bot.send_message(message.chat.id, doc['ref_link'], reply_markup=keyboard)
@@ -204,32 +203,29 @@ def react_to_start_commands(message):
         bot.send_message(message.chat.id, "Ваши рефералы: \n     " + "\n     ".join(doc['ref_owns']),
                          reply_markup=keyboard)
     if message.text == 'Получить промокод':
-        doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Да', 'Нет')
         keyboard.row('Реф. система')
         bot.send_message(message.chat.id, 'У вас есть 2 реферала? ', reply_markup=keyboard)
     if message.text == 'Да':
-        doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         chat_id = message.chat.id
         text = message.text
         referals = db.collection('users').document(str(chat_id)).get().to_dict()['ref_owns']
-        referals = referals[2:]
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         if len(referals) >= 2:
+            referals = referals[2:]
             dict = db.collection('users').document(str(chat_id)).get().to_dict()
             dict['ref_owns'] = referals
             db.collection('users').document(str(chat_id)).update(dict)
-            keyboard.row('Реф.система', 'Вернуться в начало')
+            keyboard.row('Реф. система', 'Вернуться в начало')
             bot.send_message(message.chat.id, 'Ваш промокод: ' + ref_link(8), reply_markup=keyboard)
         else:
-            keyboard.row('Реф.система', 'Вернуться в начало')
+            keyboard.row('Реф. система', 'Вернуться в начало')
             bot.send_message(message.chat.id, 'У тебя нет двух рефералов, обманывать не хорошо :)',
                              reply_markup=keyboard)
 
     if message.text == 'Активация промокода':
-        doc = doc.to_dict()
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         msg = bot.send_message(message.chat.id, 'Введите промокод:', reply_markup=keyboard)
         bot.register_next_step_handler(msg, promocode_input)
@@ -241,6 +237,12 @@ def react_to_start_commands(message):
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.row('Вернуться в начало')
         bot.send_message(message.chat.id, 'Чтобы задать вопрос, заполните форму', reply_markup=keyboard)
+        keyboard1 = telebot.types.InlineKeyboardMarkup()
+        url_ask = telebot.types.InlineKeyboardButton(text="Задать вопрос", url='https://docs.google.com/spreadsheets/d/1TsMVeeC_sz4FOVqVob5a6YJWbcQnIYkl2LoyyOVnQy0/edit?resourcekey#gid=489164935')
+        keyboard1.add(url_ask)
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        bot.send_message(message.chat.id, 'Нажмите на кнопку', reply_markup = keyboard1)
+
     ####### ЗДЕСЬ ЗАКАНЧИВАЕТСЯ ПОДДЕРЖКА #########
 
     ####### ЗДЕСЬ НАЧИНАЕТСЯ FAQ ########
@@ -408,7 +410,7 @@ def react_to_start_commands(message):
         keyboard.row('FAQ', 'Поддержка', 'Реф. система')
         bot.send_message(message.chat.id, "Поздравляем! Прогноз получен", reply_markup=keyboard)
 
-    if message.text == "Купить больше прогнозов" or message.text == '++':
+    if message.text == "Купить больше прогнозов" or message.text == 'Купить прогнозы':
         msg = bot.send_message(message.chat.id, "Сколько вы хотите купить?")
         bot.register_next_step_handler(msg, ask_how_many_buy)
 
@@ -481,10 +483,11 @@ def ask_how_many_buy(message):
                                           ' Не забудьте указать комментарий к платежу, он в предыдущем сообщении'
                                           '\nОбработка платежа может занять до 5 часов', reply_markup=keyboard)
     except:
-        bot.send_message(chat_id, "Неправильный ввод")
-        keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row('Прогнозы', 'Вернуться в начало')
-        bot.send_message(message.chat.id, 'Доступные матчи:', reply_markup=keyboard)
+        pass
+   #     bot.send_message(chat_id, "Неправильный ввод")
+    #    keyboard = telebot.types.ReplyKeyboardMarkup(True)
+     #   keyboard.row('Прогнозы', 'Вернуться в начало')
+      #  bot.send_message(message.chat.id, 'Доступные матчи:', reply_markup=keyboard)
 
 
 def ask_subscription(message):
