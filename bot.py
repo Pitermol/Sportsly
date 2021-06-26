@@ -2,7 +2,7 @@
 import telebot
 import numpy
 # from test_file import go
-# import sys
+import sys
 
 import firebase_admin
 from firebase_admin import credentials
@@ -21,8 +21,8 @@ def ref_link(length):
     return str(rand_string)
 
 
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 #telebot.apihelper.proxy = {
 #    'https': 'socks5://7Q6VEgMh:9h9dmuys@5.188.44.15:12993'}
@@ -414,6 +414,12 @@ def promocode_input(message):
     chat_id = message.chat.id
     text = message.text
     codes = db.collection('promocode').document('promocodes').get().to_dict()['oneday']
+    doc = db.collection('users').document(str(message.chat.id)).get().to_dict()
+    if doc['isAdmin']:
+        keyboard.row('Прогнозы', 'Профиль', 'Функции админа')
+    else:
+        keyboard.row('Прогнозы', 'Профиль')
+    keyboard.row('FAQ', 'Поддержка', 'Реф. система')
     if text in codes:
         bets_left = db.collection('users').document(chat_id).get().to_dict()['bets_left']
         bets_left += 1
@@ -423,6 +429,9 @@ def promocode_input(message):
         now_dict = db.collection('promocode').document('promocodes').get().to_dict()
         now_dict['oneday'] = now
         db.collection('promocode').document('promocodes').update(now_dict)
+        bot.send_message(message.chat.id, 'Активировано', reply_markup=keyboard)
+    else:
+        bot.send_message(message.chat.id, 'Нет такого кода', reply_markup=keyboard)
 
 
 def ask_how_many_buy(message):
